@@ -1,0 +1,9 @@
+{
+  "name": "FeeCalc — Payment Fee & Gross-Up Calculator",
+  "short_name": "FeeCalc",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f8fa",
+  "theme_color": "#0f4c81",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

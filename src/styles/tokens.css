@@ -1,0 +1,20 @@
+:root {
+  --ink: #16202a;
+  --ink-soft: #45566b;
+  --ink-faint: #55677a;
+  --paper: #f6f8fa;
+  --card: #ffffff;
+  --line: #d9e2ea;
+  --line-strong: #b7c6d4;
+  --accent: #0f4c81;
+  --accent-strong: #0a3a64;
+  --accent-soft: #e8f1f9;
+  --danger: #b3261e;
+  --danger-soft: #fdecea;
+  --ok: #146c43;
+  --focus: #0f4c81;
+  --radius: 10px;
+  --radius-sm: 8px;
+  --font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+}

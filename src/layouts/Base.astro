@@ -1,0 +1,78 @@
+---
+import '../styles/tokens.css';
+import '../styles/global.css';
+import { canonicalUrl, SITE_NAME } from '../lib/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath?: string;
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  canonicalPath = Astro.url.pathname,
+  jsonLd = [],
+  noindex = false,
+} = Astro.props;
+
+const canonical = canonicalUrl(Astro.site, canonicalPath);
+const ogImage = canonicalUrl(Astro.site, '/icon-512.png');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#0f4c81" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    {jsonLd.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)}></script>
+    ))}
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="/">
+        {SITE_NAME}
+      </a>
+      <nav class="site-nav" aria-label="Site">
+        <a href="/">Calculator</a>
+        <a href="/privacy/">Privacy</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>
+        {SITE_NAME} is an independent calculator. It is not affiliated with Stripe, PayPal, Square
+        or any other provider. Provider pricing changes — always verify the fee schedule that
+        applies to your account. Calculations run entirely in your browser.
+      </p>
+      <p>
+        <a href="/privacy/">Privacy</a> · <a href="/">Calculator</a>
+      </p>
+    </footer>
+  </body>
+</html>

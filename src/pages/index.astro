@@ -1,0 +1,239 @@
+---
+import Base from '../layouts/Base.astro';
+import { FEE_PRESETS } from '../core/presets';
+import { CURRENCIES } from '../core/currencies';
+import { webApplicationJsonLd } from '../lib/seo';
+
+const title = 'Payment Fee & Gross-Up Calculator — FeeCalc';
+const description =
+  'Calculate exactly how much to charge so you receive your target after Stripe, PayPal or Square fees — or see what a charge actually nets you. Free, private, no sign-up.';
+
+const providers = [...new Set(FEE_PRESETS.map((p) => p.provider))];
+---
+
+<Base
+  title={title}
+  description={description}
+  canonicalPath="/"
+  jsonLd={[webApplicationJsonLd(Astro.site, description)]}
+>
+  <h1>Payment fee &amp; gross-up calculator</h1>
+  <p class="lead">
+    Tell it the amount you want to end up with — it works backwards through the processor's fee and
+    rounding so you actually receive it. Or flip it: see what a charge nets after fees.
+  </p>
+
+  <form class="calc" id="calc" novalidate>
+    <div class="mode-switch" role="radiogroup" aria-label="Calculation mode">
+      <label>
+        <input type="radio" name="mode" value="receive" checked />I want to receive
+      </label>
+      <label>
+        <input type="radio" name="mode" value="charge" />I plan to charge
+      </label>
+    </div>
+
+    <div class="field">
+      <label for="amount" id="amount-label">
+        Amount you want to receive
+      </label>
+      <div class="amount-row">
+        <input
+          type="text"
+          id="amount"
+          name="amount"
+          inputmode="decimal"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="1,000.00"
+          aria-describedby="amount-error"
+        />
+        <select id="currency" aria-label="Currency">
+          {CURRENCIES.map((c) => (
+            <option value={c.code}>
+              {c.code} ({c.symbol})
+            </option>
+          ))}
+        </select>
+      </div>
+      <p class="error" id="amount-error" role="alert" hidden></p>
+    </div>
+
+    <div class="fee-config">
+      <div class="field">
+        <label for="preset">Fee preset</label>
+        <select id="preset" name="preset">
+          <optgroup label="Custom">
+            <option value="custom">Custom fee</option>
+          </optgroup>
+          {providers.map((provider) => (
+            <optgroup label={provider}>
+              {FEE_PRESETS.filter((p) => p.provider === provider).map((p) => (
+                <option value={p.id}>
+                  {p.label} — {p.market}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        <p class="preset-meta" id="preset-meta"></p>
+        <ul class="preset-conditions" id="preset-conditions"></ul>
+      </div>
+
+      <div class="fee-grid">
+        <label>
+          <span class="label-text">Percentage fee</span>
+          <span class="input-suffix">
+            <input
+              type="text"
+              id="pct"
+              inputmode="decimal"
+              autocomplete="off"
+              value="2.9"
+              aria-describedby="pct-error"
+            />
+            <span class="suffix">%</span>
+          </span>
+          <span class="error" id="pct-error" role="alert" hidden></span>
+        </label>
+        <label>
+          <span class="label-text">Fixed fee</span>
+          <input
+            type="text"
+            id="fixed"
+            inputmode="decimal"
+            autocomplete="off"
+            value="0.30"
+            aria-describedby="fixed-error"
+          />
+          <span class="error" id="fixed-error" role="alert" hidden></span>
+        </label>
+        <label>
+          <span class="label-text">
+            Extra % <span class="hint-inline">(optional surcharge)</span>
+          </span>
+          <span class="input-suffix">
+            <input
+              type="text"
+              id="epct"
+              inputmode="decimal"
+              autocomplete="off"
+              placeholder="0"
+              aria-describedby="epct-error"
+            />
+            <span class="suffix">%</span>
+          </span>
+          <span class="error" id="epct-error" role="alert" hidden></span>
+        </label>
+        <label>
+          <span class="label-text">
+            Extra fixed <span class="hint-inline">(optional)</span>
+          </span>
+          <input
+            type="text"
+            id="efixed"
+            inputmode="decimal"
+            autocomplete="off"
+            placeholder="0"
+            aria-describedby="efixed-error"
+          />
+          <span class="error" id="efixed-error" role="alert" hidden></span>
+        </label>
+      </div>
+    </div>
+  </form>
+
+  <section class="result" id="result" hidden aria-live="polite" aria-atomic="false">
+    <p class="result-label" id="result-label">
+      Charge at least
+    </p>
+    <p class="result-main" id="result-main"></p>
+    <div class="copy-row">
+      <button type="button" class="btn btn-primary" id="copy">
+        Copy amount
+      </button>
+      <button type="button" class="btn btn-ghost" id="copy-link">
+        Copy link
+      </button>
+    </div>
+    <dl class="breakdown" id="breakdown"></dl>
+    <details class="how" id="how">
+      <summary>How this is calculated</summary>
+      <p>
+        The processor's fee is <code>gross × rate + fixed</code>, each part rounded to the nearest
+        cent. Working backwards, the starting point is the algebraic gross-up
+        <code>gross ≥ (target + fixed) ÷ (1 − rate)</code>. Because the fee itself is rounded, we
+        then check the actual net at that charge and step a cent at a time to the smallest amount
+        whose rounded fee still leaves you at or above the target.
+      </p>
+      <p>
+        Adding the percentage to your net instead (<code>target × (1 + rate)</code>) undercharges:
+        the processor takes its percentage of the <em>larger gross</em>, not of your target.
+      </p>
+    </details>
+  </section>
+
+  <p class="no-js" id="no-js">
+    Enable JavaScript for instant results — everything runs locally in your browser.
+  </p>
+
+  <section class="prose">
+    <h2>What this calculator does</h2>
+    <p>
+      Payment processors take a percentage of each charge plus a fixed amount. If you need exactly
+      $1,000 to land in your account, charging $1,000 won't get you there — and neither will adding
+      2.9% on top, because the processor's percentage applies to the bigger number. This tool solves
+      it both ways: the minimum amount to charge for a target payout, and what a given charge
+      actually nets.
+    </p>
+
+    <h2>Why "add the percentage" is wrong</h2>
+    <p>
+      Charging $1,000 + 2.9% = $1,029 leaves $998.86 after the fee at Stripe's US rate — over a
+      dollar short. The fee is taken from the <em>final charge</em>: charge $1,030.17 instead and
+      the rounded fee of $30.17 leaves exactly $1,000.00. The breakdown above always shows the
+      rounded fee the way the processor applies it.
+    </p>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>
+        Results are estimates — providers change pricing and your account's schedule may differ.
+      </li>
+      <li>
+        Premium cards, manually entered cards, international cards and currency conversion often
+        cost more; presets state their conditions.
+      </li>
+      <li>
+        Cross-border fees, FX markups, dispute fees and taxes are not included unless you add them
+        in the extra fields.
+      </li>
+      <li>
+        Fee presets cover a handful of verified combinations; check your provider's current schedule
+        for anything else — Custom mode always works.
+      </li>
+    </ul>
+
+    <h2>Sources</h2>
+    <p>
+      Presets come from official pricing pages, checked on the date shown. Fees change — verify
+      before invoicing.
+    </p>
+    <ul class="source-list">
+      {FEE_PRESETS.map((p) => (
+        <li>
+          <span class="src-name">
+            <a href={p.sourceUrl} rel="noopener noreferrer">
+              {p.provider} — {p.market}: {p.label}
+            </a>
+          </span>
+          <span class="src-meta">verified {p.verifiedAt}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <script>
+    import '../ui/calculator';
+  </script>
+</Base>
