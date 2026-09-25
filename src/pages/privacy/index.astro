@@ -1,0 +1,37 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  title="Privacy — FeeCalc"
+  description="How FeeCalc handles your data: it doesn't. Calculations run locally in your browser."
+  canonicalPath="/privacy/"
+>
+  <h1>Privacy</h1>
+  <section class="prose">
+    <h2>Your numbers stay in your browser</h2>
+    <p>
+      Everything you type into the calculator — amounts, currencies, fee rates — is processed
+      locally on your device. Nothing is sent to a server, stored in a database, or shared with
+      anyone. There is no backend involved in the calculation.
+    </p>
+    <h2>No tracking, no accounts</h2>
+    <ul>
+      <li>No analytics, tracking scripts, session replay or fingerprinting.</li>
+      <li>No advertising or third-party ad scripts.</li>
+      <li>No accounts, logins, cookies for tracking, or personal data collection.</li>
+    </ul>
+    <h2>Shared links</h2>
+    <p>
+      The "copy link" button puts your current inputs into the page URL (for example
+      <code>?amt=1000&amp;cur=USD</code>) so you can share a configured calculation. If you share
+      that URL, whoever opens it sees those inputs — don't put anything sensitive in it. A plain
+      link to this site contains nothing about you.
+    </p>
+    <h2>Server logs</h2>
+    <p>
+      Like any website, our hosting provider may keep standard request logs (IP address, browser,
+      page requested) for security and operations. We don't use them to profile visitors.
+    </p>
+  </section>
+</Base>
