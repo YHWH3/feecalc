@@ -44,6 +44,9 @@ const noJsEl = el<HTMLElement>('no-js');
 
 let lastResult: CalcResult | null = null;
 let currency: Currency = currencyByCode(DEFAULT_CURRENCY)!;
+// An untouched empty field isn't an error yet — flag it once the user
+// actually interacts (input or leaving the field).
+let amountDirty = false;
 
 /* ---------- field helpers ---------- */
 
@@ -177,7 +180,11 @@ function readFee(): { fee: FeeConfig | null; hadError: boolean } {
 function compute(): CalcResult | null {
   const amount = parseAmount(amountInput.value, currency);
   if (!amount.ok) {
-    setError(amountInput, amountError, amount.message);
+    setError(
+      amountInput,
+      amountError,
+      amount.code === 'empty' && !amountDirty ? null : amount.message,
+    );
     return null;
   }
   setError(amountInput, amountError, null);
@@ -299,6 +306,7 @@ function update(): void {
 
 form.addEventListener('input', (ev) => {
   const target = ev.target as HTMLElement;
+  if (target === amountInput) amountDirty = true;
   if (
     (target === pctInput ||
       target === fixedInput ||
@@ -310,6 +318,13 @@ form.addEventListener('input', (ev) => {
     presetSelect.value = 'custom';
     renderPresetMeta();
   }
+  update();
+});
+
+amountInput.addEventListener('blur', () => {
+  // Tabbing past an empty field counts as interaction → show the error.
+  if (amountDirty || amountInput.value.trim() !== '') return;
+  amountDirty = true;
   update();
 });
 

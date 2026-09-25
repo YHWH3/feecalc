@@ -157,6 +157,12 @@ h2 {
   z-index: 1;
 }
 
+/* Checked segment is filled with --accent: move the ring outside the
+   segment so it stays visible against the light track. */
+.mode-switch label:has(input:checked):has(input:focus-visible) {
+  outline-offset: 2px;
+}
+
 /* ---------- fields ---------- */
 
 .field {
