@@ -71,11 +71,7 @@ test.describe('calculator — golden path', () => {
     await expect(page.locator('#pct-error')).toBeVisible();
   });
 
-  test('copy amount writes the charge to the clipboard', async ({
-    page,
-    context,
-    browserName,
-  }) => {
+  test('copy amount writes the charge to the clipboard', async ({ page, context, browserName }) => {
     // Clipboard permissions are a Chromium concept; FF/WebKit reject the grant.
     if (browserName === 'chromium') {
       await context.grantPermissions(['clipboard-read', 'clipboard-write']);
